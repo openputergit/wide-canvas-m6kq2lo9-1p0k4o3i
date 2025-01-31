@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaVision - AI Language Learning</title>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .neubrutalism {
+            border: 3px solid #000;
+            box-shadow: 5px 5px 0px #000;
+            transition: all 0.2s ease;
+        }
+        .neubrutalism:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #000;
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .streak-animation {
+            animation: bounce 0.5s ease;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .badge {
+            position: relative;
+            overflow: hidden;
+        }
+        .badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.2);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+    </style>
+</head>
+<body class="bg-[#FFE5E5]">
+    <div class="min-h-screen">
+        <nav class="p-4 bg-white neubrutalism mb-8">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">LinguaVision 🌎</h1>
+                <div class="flex gap-4 items-center">
+                    <span class="streak-counter neubrutalism bg-[#FFB6B6] p-2">
+                        🔥 Streak: <span id="streak">0</span> days
+                    </span>
+                    <button id="profileBtn" class="neubrutalism bg-[#B6FFB6] p-2">
+                        <i class="bi bi-person-circle"></i> Profile
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Image Upload Section -->
+                <div class="neubrutalism bg-white p-6">
+                    <h2 class="text-xl font-bold mb-4">Vision Learning</h2>
+                    <div id="uploadArea" class="border-2 border-dashed border-gray-300 p-8 text-center cursor-pointer">
+                        <i class="bi bi-cloud-upload text-4xl"></i>
+                        <p>Drop an image or click to upload</p>
+                        <input type="file" id="imageInput" class="hidden" accept="image/*">
+                    </div>
+                    <div id="imagePreview" class="mt-4 hidden">
+                        <img id="preview" class="max-w-full h-auto neubrutalism">
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="neubrutalism bg-white p-6">
+                    <h2 class="text-xl font-bold mb-4">AI Language Assistant</h2>
+                    <div id="chatBox" class="h-[400px] overflow-y-auto mb-4 p-4 neubrutalism bg-gray-50">
+                        <div class="message system mb-4">
+                            Welcome! Upload an image and I'll help you learn language through it! 🚀
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="messageInput" class="flex-1 p-2 neubrutalism" placeholder="Ask about the image...">
+                        <button id="sendBtn" class="neubrutalism bg-[#B6B6FF] p-2">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="neubrutalism bg-white p-6">
+                    <h3 class="text-lg font-bold mb-4">Learning Progress</h3>
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div class="neubrutalism bg-white p-6">
+                    <h3 class="text-lg font-bold mb-4">Achievements</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="badge neubrutalism bg-[#FFD700] p-2 text-center">
+                            <i class="bi bi-star-fill text-2xl"></i>
+                            <p class="text-sm">First Chat</p>
+                        </div>
+                        <div class="badge neubrutalism bg-[#C0C0C0] p-2 text-center">
+                            <i class="bi bi-image text-2xl"></i>
+                            <p class="text-sm">Image Pro</p>
+                        </div>
+                        <div class="badge neubrutalism bg-[#CD7F32] p-2 text-center">
+                            <i class="bi bi-trophy text-2xl"></i>
+                            <p class="text-sm">Streak Master</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="neubrutalism bg-white p-6">
+                    <h3 class="text-lg font-bold mb-4">Daily Challenge</h3>
+                    <div class="text-center">
+                        <div class="neubrutalism bg-[#FFE4B5] p-4 mb-4">
+                            <p>Upload 3 images today</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div class="bg-black h-2.5 rounded-full" style="width: 33%"></div>
+                            </div>
+                        </div>
+                        <button id="challengeBtn" class="neubrutalism bg-[#98FB98] p-2 w-full">
+                            Start Challenge
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize variables
+        let currentStreak = 0;
+        let uploadedImage = null;
+        let isLoading = false;
+
+        // DOM Elements
+        const imageInput = document.getElementById('imageInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const imagePreview = document.getElementById('imagePreview');
+        const preview = document.getElementById('preview');
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Setup Progress Chart
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Learning Minutes',
+                    data: [30, 45, 25, 60, 40, 50, 35],
+                    borderColor: '#000',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // File Upload Handling
+        uploadArea.addEventListener('click', () => imageInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#f0f0f0';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+        uploadArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'transparent';
+            const file = e.dataTransfer.files[0];
+            await handleImageUpload(file);
+        });
+
+        imageInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            await handleImageUpload(file);
+        });
+
+        async function handleImageUpload(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            try {
+                // Show loading state
+                uploadArea.innerHTML = '<div class="loading-spinner">⌛</div>';
+
+                // Upload to storage
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('userId', 'user123');
+                formData.append('appSlug', 'linguavision-123');
+
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/storage/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer AHjJuiCKBiPFhS5VIiPee8kGFhs1'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show preview
+                    preview.src = URL.createObjectURL(file);
+                    imagePreview.classList.remove('hidden');
+                    uploadedImage = data.url;
+
+                    // Trigger AI analysis
+                    analyzeImage(data.url);
+
+                    // Show success message
+                    addMessage('system', 'Image uploaded successfully! Ask me anything about it!');
+                    confetti();
+                }
+            } catch (error) {
+                console.error('Upload failed:', error);
+                addMessage('system', 'Sorry, upload failed. Please try again.');
+            } finally {
+                uploadArea.innerHTML = '<i class="bi bi-cloud-upload text-4xl"></i><p>Drop an image or click to upload</p>';
+            }
+        }
+
+        async function analyzeImage(imageUrl) {
+            if (!imageUrl || isLoading) return;
+
+            isLoading = true;
+            addMessage('system', 'Analyzing image...');
+
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer AHjJuiCKBiPFhS5VIiPee8kGFhs1',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: 'What's in this image? Describe it in simple language suitable for learning.'
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: {
+                                        url: imageUrl
+                                    }
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                addMessage('assistant', data.message);
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                addMessage('system', 'Sorry, analysis failed. Please try again.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Chat Handling
+        sendBtn.addEventListener('click', async () => {
+            const message = messageInput.value.trim();
+            if (!message || !uploadedImage || isLoading) return;
+
+            addMessage('user', message);
+            messageInput.value = '';
+            isLoading = true;
+
+            try {
+                const response = await fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/ai', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer AHjJuiCKBiPFhS5VIiPee8kGFhs1',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: message
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: {
+                                        url: uploadedImage
+                                    }
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                addMessage('assistant', data.message);
+            } catch (error) {
+                console.error('Chat failed:', error);
+                addMessage('system', 'Sorry, something went wrong. Please try again.');
+            } finally {
+                isLoading = false;
+            }
+        });
+
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', role, 'mb-4', 'p-2', 'neubrutalism');
+            
+            if (role === 'user') {
+                messageDiv.classList.add('bg-[#B6FFB6]');
+            } else if (role === 'assistant') {
+                messageDiv.classList.add('bg-[#B6B6FF]');
+            } else {
+                messageDiv.classList.add('bg-[#FFB6B6]');
+            }
+
+            messageDiv.textContent = content;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Initialize streak
+        document.getElementById('streak').textContent = currentStreak;
+
+        // Challenge button handler
+        document.getElementById('challengeBtn').addEventListener('click', () => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
